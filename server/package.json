@@ -1,0 +1,39 @@
+{
+  "name": "@micro-saas-scout/server",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "main": "dist/index.js",
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "build": "tsc -p tsconfig.json",
+    "start": "node dist/index.js",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "latest",
+    "@clerk/express": "latest",
+    "@google/generative-ai": "latest",
+    "@micro-saas-scout/shared": "file:../shared",
+    "@supabase/supabase-js": "latest",
+    "compression": "latest",
+    "cors": "latest",
+    "dotenv": "latest",
+    "express": "latest",
+    "express-rate-limit": "latest",
+    "helmet": "latest",
+    "nanoid": "latest",
+    "openai": "latest",
+    "pdfkit": "latest",
+    "stripe": "latest",
+    "zod": "latest"
+  },
+  "devDependencies": {
+    "@types/compression": "latest",
+    "@types/cors": "latest",
+    "@types/express": "latest",
+    "@types/pdfkit": "latest",
+    "tsx": "latest",
+    "typescript": "latest"
+  }
+}

@@ -1,0 +1,14 @@
+node_modules
+dist
+build
+.DS_Store
+.env
+.env.*
+!.env.example
+coverage
+*.log
+.vercel
+.netlify
+.turbo
+extension.zip
+reports
