@@ -1,4 +1,4 @@
-import type { AnalysisReport, PageSnapshot } from "./schemas";
+import type { AnalysisReport, PageSnapshot } from "./schemas.js";
 
 export const demoSnapshot: PageSnapshot = {
   url: "https://example-saas.com",

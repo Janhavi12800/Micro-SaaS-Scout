@@ -12,7 +12,7 @@ import {
   type ChatMessage,
   type ChatRequest,
 } from "@micro-saas-scout/shared";
-import { config } from "../config";
+import { config } from "../config.js";
 
 function extractJson(text: string) {
   const trimmed = text.trim();

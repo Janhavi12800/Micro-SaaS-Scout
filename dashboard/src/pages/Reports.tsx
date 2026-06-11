@@ -1,6 +1,6 @@
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { demoReport } from "@micro-saas-scout/shared";
-import { Download, FileJson, FileText, Sparkles } from "lucide-react";
+import { Download, FileJson, FileText, Sparkles, type LucideIcon } from "lucide-react";
 import { formatCurrency } from "../lib/utils";
 import { Badge } from "../components/ui/badge";
 import { Button } from "../components/ui/button";
@@ -10,6 +10,13 @@ const scoreData = Object.entries(demoReport.scores).map(([name, score]) => ({
   name,
   value: score.value,
 }));
+
+const exportFormats: Array<[string, LucideIcon]> = [
+  ["PDF", Download],
+  ["Markdown", FileText],
+  ["JSON", FileJson],
+  ["Notion", Sparkles],
+];
 
 export function ReportsPage() {
   return (
@@ -78,18 +85,13 @@ export function ReportsPage() {
           <div className="mt-6">
             <CardTitle>Export formats</CardTitle>
             <div className="mt-3 grid grid-cols-2 gap-3">
-              {[
-                ["PDF", Download],
-                ["Markdown", FileText],
-                ["JSON", FileJson],
-                ["Notion", Sparkles],
-              ].map(([label, Icon]) => (
+              {exportFormats.map(([label, Icon]) => (
                 <button
-                  key={String(label)}
+                  key={label}
                   className="rounded-2xl border border-white/10 bg-white/[0.04] p-4 text-left text-sm font-semibold text-white transition hover:bg-white/10"
                 >
                   <Icon size={18} className="mb-3 text-sky-300" />
-                  {String(label)}
+                  {label}
                 </button>
               ))}
             </div>

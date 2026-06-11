@@ -4,9 +4,9 @@ import {
   chatRequestSchema,
   analysisReportSchema,
 } from "@micro-saas-scout/shared";
-import { validateBody } from "../middleware/validate";
-import { analyzeWebsite, chatWithScout } from "../services/ai";
-import { saveProject } from "../services/projects";
+import { validateBody } from "../middleware/validate.js";
+import { analyzeWebsite, chatWithScout } from "../services/ai.js";
+import { saveProject } from "../services/projects.js";
 
 export const analysisRouter = Router();
 

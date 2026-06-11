@@ -3,7 +3,6 @@ import { motion } from "framer-motion";
 import {
   ArrowRight,
   Bot,
-  Chrome,
   DollarSign,
   Download,
   Globe2,
@@ -95,7 +94,7 @@ export function HomePage() {
           <div className="relative p-6">
             <div className="flex items-center justify-between">
               <Badge>Live AI report</Badge>
-              <Chrome className="text-sky-300" />
+              <Globe2 className="text-sky-300" />
             </div>
             <div className="mt-6 rounded-3xl border border-white/10 bg-black/40 p-5">
               <div className="mb-3 flex items-center gap-2 text-sm text-zinc-400">

@@ -1,8 +1,8 @@
 import { Router } from "express";
 import Stripe from "stripe";
 import { z } from "zod";
-import { config } from "../config";
-import { validateBody } from "../middleware/validate";
+import { config } from "../config.js";
+import { validateBody } from "../middleware/validate.js";
 
 const checkoutSchema = z.object({
   priceId: z.string().min(1),

@@ -1,5 +1,5 @@
 import type { AnalysisReport, SavedProject } from "@micro-saas-scout/shared";
-import { supabase } from "../lib/supabase";
+import { supabase } from "../lib/supabase.js";
 
 const memoryStore = new Map<string, SavedProject[]>();
 

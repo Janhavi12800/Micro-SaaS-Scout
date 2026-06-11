@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { listProjects } from "../services/projects";
+import { listProjects } from "../services/projects.js";
 
 export const projectsRouter = Router();
 

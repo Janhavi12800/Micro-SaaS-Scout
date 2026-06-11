@@ -1,3 +1,3 @@
-export * from "./schemas";
-export * from "./prompts";
-export * from "./demo";
+export * from "./schemas.js";
+export * from "./prompts.js";
+export * from "./demo.js";

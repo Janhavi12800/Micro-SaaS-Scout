@@ -3,12 +3,12 @@ import cors from "cors";
 import express from "express";
 import rateLimit from "express-rate-limit";
 import helmet from "helmet";
-import { config } from "./config";
-import { attachUser } from "./middleware/auth";
-import { analysisRouter } from "./routes/analysis";
-import { billingRouter } from "./routes/billing";
-import { exportRouter } from "./routes/export";
-import { projectsRouter } from "./routes/projects";
+import { config } from "./config.js";
+import { attachUser } from "./middleware/auth.js";
+import { analysisRouter } from "./routes/analysis.js";
+import { billingRouter } from "./routes/billing.js";
+import { exportRouter } from "./routes/export.js";
+import { projectsRouter } from "./routes/projects.js";
 
 const app = express();
 

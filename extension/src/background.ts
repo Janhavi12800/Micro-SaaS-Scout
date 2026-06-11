@@ -15,7 +15,9 @@ async function getActiveTab() {
 
 async function captureVisibleTab() {
   try {
-    return await chrome.tabs.captureVisibleTab(undefined, { format: "jpeg", quality: 62 });
+    const window = await chrome.windows.getCurrent();
+    if (typeof window.id !== "number") return undefined;
+    return await chrome.tabs.captureVisibleTab(window.id, { format: "jpeg", quality: 62 });
   } catch {
     return undefined;
   }
@@ -69,7 +71,7 @@ chrome.runtime.onMessage.addListener((message: ScoutMessage, _sender, sendRespon
 
     if (message.type === "OPEN_SIDE_PANEL") {
       const tab = await getActiveTab();
-      await chrome.sidePanel.open({ tabId: tab.id });
+      await chrome.sidePanel.open({ windowId: tab.windowId });
       sendResponse({ ok: true });
     }
   })().catch((error) => {

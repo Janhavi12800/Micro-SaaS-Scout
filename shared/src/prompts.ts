@@ -1,4 +1,4 @@
-import type { AnalysisRequest, ChatMessage, PageSnapshot } from "./schemas";
+import type { AnalysisRequest, ChatMessage, PageSnapshot } from "./schemas.js";
 
 const reportJsonContract = `Return only valid JSON matching this TypeScript shape:
 {
