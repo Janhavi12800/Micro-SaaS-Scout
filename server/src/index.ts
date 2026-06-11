@@ -11,6 +11,24 @@ import { exportRouter } from "./routes/export.js";
 import { projectsRouter } from "./routes/projects.js";
 
 const app = express();
+const allowedOrigins = new Set([
+  config.dashboardOrigin,
+  ...config.additionalCorsOrigins,
+].filter(Boolean));
+const configuredExtensionOrigin = config.extensionId
+  ? `chrome-extension://${config.extensionId}`
+  : "";
+
+function isAllowedOrigin(origin: string) {
+  if (allowedOrigins.has(origin)) return true;
+  if (configuredExtensionOrigin && origin === configuredExtensionOrigin) return true;
+
+  // Beginner/demo deployments do not know the Chrome extension ID until after
+  // Chrome assigns it. Set CHROME_EXTENSION_ID in production to lock this down.
+  if (!config.extensionId && origin.startsWith(config.extensionOrigin)) return true;
+
+  return false;
+}
 
 app.set("trust proxy", 1);
 app.use(
@@ -24,11 +42,7 @@ app.use(
   cors({
     origin(origin, callback) {
       if (!origin) return callback(null, true);
-      if (
-        origin === config.dashboardOrigin ||
-        origin.startsWith("chrome-extension://") ||
-        origin.startsWith(config.extensionOrigin)
-      ) {
+      if (isAllowedOrigin(origin)) {
         return callback(null, true);
       }
       return callback(new Error(`Origin not allowed: ${origin}`));

@@ -4,15 +4,16 @@
 
 ```bash
 npm run generate:assets
-npm run build -w extension
+VITE_API_URL=https://micro-saas-scout-api.onrender.com npm run package:extension
 ```
 
 Chrome Store listing assets to prepare:
 
 - 128x128 app icon from `extension/public/icons/icon-128.svg`
-- Screenshots of popup and side panel
+- Screenshots listed in `deploy/screenshots/README.md`
 - Promo tile with tagline: "Discover SaaS opportunities on any website using AI."
-- Privacy policy URL
+- Privacy policy based on `docs/PRIVACY_POLICY.md`
+- Listing copy based on `docs/CHROME_STORE_LISTING.md`
 
 ## Permissions explanation
 
@@ -29,11 +30,14 @@ The extension sends extracted page text, metadata, CTA/pricing signals, and opti
 
 ## Package
 
-From `extension/dist`, create a zip:
+Run:
 
 ```bash
-cd extension/dist
-zip -r ../../micro-saas-scout-extension.zip .
+npm run package:extension
 ```
 
-Upload the zip in the Chrome Web Store Developer Dashboard.
+Upload this zip in the Chrome Web Store Developer Dashboard:
+
+```txt
+deploy/chrome/micro-saas-scout-extension.zip
+```

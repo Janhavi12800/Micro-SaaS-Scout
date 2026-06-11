@@ -1,0 +1,45 @@
+services:
+  - type: web
+    name: micro-saas-scout-api
+    runtime: node
+    plan: free
+    rootDir: .
+    autoDeploy: true
+    buildCommand: npm install && npm run build:server
+    startCommand: npm run start -w server
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      - key: DASHBOARD_ORIGIN
+        value: https://micro-saas-scout.vercel.app
+      - key: ADDITIONAL_CORS_ORIGINS
+        value: https://micro-saas-scout.vercel.app
+      - key: EXTENSION_ORIGIN
+        value: chrome-extension://
+      - key: RATE_LIMIT_WINDOW_MS
+        value: 60000
+      - key: RATE_LIMIT_MAX
+        value: 60
+      - key: FREE_ANALYSIS_LIMIT
+        value: 5
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: ANTHROPIC_API_KEY
+        sync: false
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        sync: false
+      - key: CLERK_PUBLISHABLE_KEY
+        sync: false
+      - key: CLERK_SECRET_KEY
+        sync: false
+      - key: STRIPE_SECRET_KEY
+        sync: false
+      - key: STRIPE_WEBHOOK_SECRET
+        sync: false

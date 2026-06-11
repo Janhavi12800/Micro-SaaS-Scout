@@ -4,11 +4,20 @@ function optional(name: string, fallback = "") {
   return process.env[name] ?? fallback;
 }
 
+function csv(name: string) {
+  return optional(name)
+    .split(",")
+    .map((value) => value.trim())
+    .filter(Boolean);
+}
+
 export const config = {
   nodeEnv: optional("NODE_ENV", "development"),
   port: Number(optional("PORT", "8787")),
   dashboardOrigin: optional("DASHBOARD_ORIGIN", "http://localhost:5173"),
   extensionOrigin: optional("EXTENSION_ORIGIN", "chrome-extension://"),
+  extensionId: optional("CHROME_EXTENSION_ID"),
+  additionalCorsOrigins: csv("ADDITIONAL_CORS_ORIGINS"),
   openaiApiKey: optional("OPENAI_API_KEY"),
   geminiApiKey: optional("GEMINI_API_KEY"),
   anthropicApiKey: optional("ANTHROPIC_API_KEY"),

@@ -1,5 +1,7 @@
 import type { ManifestV3Export } from "@crxjs/vite-plugin";
 
+const connectSrc = process.env.NODE_ENV === "production" ? "https:" : "http://localhost:8787 https:";
+
 const manifest: ManifestV3Export = {
   manifest_version: 3,
   name: "Micro-SaaS Scout",
@@ -33,8 +35,7 @@ const manifest: ManifestV3Export = {
   permissions: ["activeTab", "scripting", "storage", "tabs", "sidePanel"],
   host_permissions: ["<all_urls>"],
   content_security_policy: {
-    extension_pages:
-      "script-src 'self'; object-src 'self'; connect-src 'self' http://localhost:8787 https:;",
+    extension_pages: `script-src 'self'; object-src 'self'; connect-src 'self' ${connectSrc};`,
   },
 };
 

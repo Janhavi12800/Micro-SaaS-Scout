@@ -16,6 +16,12 @@
     "dev:extension": "npm run dev -w extension",
     "dev:server": "npm run dev -w server",
     "build": "npm run build -w shared && npm run build -w dashboard && npm run build -w extension && npm run build -w server",
+    "build:dashboard": "npm run build -w shared && npm run build -w dashboard",
+    "build:server": "npm run build -w shared && npm run build -w server",
+    "build:extension": "npm run build -w shared && npm run build -w extension",
+    "build:extension:production": "VITE_API_URL=${VITE_API_URL:-https://micro-saas-scout-api.onrender.com} npm run build:extension",
+    "package:extension": "mkdir -p deploy/chrome && rm -f deploy/chrome/micro-saas-scout-extension.zip && npm run build:extension:production && cd extension/dist && zip -r ../../deploy/chrome/micro-saas-scout-extension.zip .",
+    "deploy:prepare": "npm run generate:assets && npm run build:dashboard && npm run build:server && npm run package:extension",
     "typecheck": "npm run typecheck -w shared && npm run typecheck -w dashboard && npm run typecheck -w extension && npm run typecheck -w server",
     "lint": "eslint . --ext .ts,.tsx",
     "generate:assets": "tsx scripts/generate-assets.ts"
