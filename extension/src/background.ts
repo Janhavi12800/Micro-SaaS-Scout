@@ -1,11 +1,25 @@
 import type { AnalysisReport, AnalysisRequest, PageSnapshot } from "@micro-saas-scout/shared";
-import { analyze } from "./lib/api";
+import { activateLicense, analyze, createRazorpayLink, getLicenseStatus } from "./lib/api";
 
 type ScoutMessage =
   | { type: "ANALYZE_CURRENT_TAB"; mode?: AnalysisRequest["mode"]; provider?: AnalysisRequest["provider"] }
   | { type: "SAVE_REPORT"; report: AnalysisReport }
   | { type: "GET_LATEST_REPORT" }
-  | { type: "OPEN_SIDE_PANEL" };
+  | { type: "OPEN_SIDE_PANEL" }
+  | { type: "GET_TRIAL_STATUS" }
+  | { type: "START_RAZORPAY_PAYMENT"; email?: string }
+  | { type: "ACTIVATE_LICENSE"; code: string; email?: string };
+
+type EntitlementStatus = {
+  deviceId: string;
+  trialStartedAt: string;
+  trialEndsAt: string;
+  trialDaysLeft: number;
+  isTrialActive: boolean;
+  isLicensed: boolean;
+};
+
+const TRIAL_DAYS = 3;
 
 function canAnalyzeTab(tab: chrome.tabs.Tab) {
   const url = tab.url ?? "";
@@ -117,6 +131,52 @@ async function persistReport(report: AnalysisReport) {
   const saved = await chrome.storage.local.get(["reports"]);
   const reports = [report, ...((saved.reports as AnalysisReport[] | undefined) ?? [])].slice(0, 50);
   await chrome.storage.local.set({ latestReport: report, reports });
+}
+
+async function getOrCreateDeviceState() {
+  const stored = await chrome.storage.local.get(["deviceId", "trialStartedAt", "license"]);
+  const deviceId = typeof stored.deviceId === "string" ? stored.deviceId : crypto.randomUUID();
+  const trialStartedAt =
+    typeof stored.trialStartedAt === "string" ? stored.trialStartedAt : new Date().toISOString();
+
+  if (!stored.deviceId || !stored.trialStartedAt) {
+    await chrome.storage.local.set({ deviceId, trialStartedAt });
+  }
+
+  return {
+    deviceId,
+    trialStartedAt,
+    localLicense: stored.license as { active?: boolean } | undefined,
+  };
+}
+
+async function getEntitlementStatus(syncRemote = true): Promise<EntitlementStatus> {
+  const { deviceId, trialStartedAt, localLicense } = await getOrCreateDeviceState();
+  const trialStartMs = new Date(trialStartedAt).getTime();
+  const trialEndsAtMs = trialStartMs + TRIAL_DAYS * 24 * 60 * 60 * 1000;
+  const now = Date.now();
+  let isLicensed = Boolean(localLicense?.active);
+
+  if (syncRemote) {
+    try {
+      const response = await getLicenseStatus(deviceId);
+      if (response.license.active) {
+        isLicensed = true;
+        await chrome.storage.local.set({ license: response.license });
+      }
+    } catch {
+      // Keep local state usable if backend is offline.
+    }
+  }
+
+  return {
+    deviceId,
+    trialStartedAt,
+    trialEndsAt: new Date(trialEndsAtMs).toISOString(),
+    trialDaysLeft: Math.max(0, Math.ceil((trialEndsAtMs - now) / (24 * 60 * 60 * 1000))),
+    isTrialActive: now < trialEndsAtMs,
+    isLicensed,
+  };
 }
 
 function hostnameFromUrl(url: string) {
@@ -276,6 +336,12 @@ chrome.runtime.onInstalled.addListener(() => {
 chrome.runtime.onMessage.addListener((message: ScoutMessage, _sender, sendResponse) => {
   (async () => {
     if (message.type === "ANALYZE_CURRENT_TAB") {
+      const entitlement = await getEntitlementStatus();
+      if (!entitlement.isTrialActive && !entitlement.isLicensed) {
+        sendResponse({ trialExpired: true, entitlement });
+        return;
+      }
+
       const snapshot = await scrapeActiveTab();
       let report: AnalysisReport;
       try {
@@ -302,6 +368,35 @@ chrome.runtime.onMessage.addListener((message: ScoutMessage, _sender, sendRespon
     if (message.type === "GET_LATEST_REPORT") {
       const stored = await chrome.storage.local.get(["latestReport"]);
       sendResponse({ report: isPlaceholderReport(stored.latestReport) ? undefined : stored.latestReport });
+      return;
+    }
+
+    if (message.type === "GET_TRIAL_STATUS") {
+      const entitlement = await getEntitlementStatus();
+      sendResponse({ entitlement });
+      return;
+    }
+
+    if (message.type === "START_RAZORPAY_PAYMENT") {
+      const entitlement = await getEntitlementStatus(false);
+      const response = await createRazorpayLink({
+        deviceId: entitlement.deviceId,
+        email: message.email,
+      });
+      await chrome.tabs.create({ url: response.url });
+      sendResponse({ ok: true, url: response.url });
+      return;
+    }
+
+    if (message.type === "ACTIVATE_LICENSE") {
+      const entitlement = await getEntitlementStatus(false);
+      const response = await activateLicense({
+        deviceId: entitlement.deviceId,
+        code: message.code,
+        email: message.email,
+      });
+      await chrome.storage.local.set({ license: response.license });
+      sendResponse({ license: response.license, entitlement: await getEntitlementStatus(false) });
       return;
     }
 

@@ -689,6 +689,109 @@ svg {
   filter: brightness(1.08);
 }
 
+.trial-pill {
+  display: inline-flex;
+  align-items: center;
+  min-height: 28px;
+  border: 1px solid rgba(124, 58, 237, 0.18);
+  border-radius: 999px;
+  padding: 0 9px;
+  color: #6d28d9;
+  background: rgba(124, 58, 237, 0.08);
+  font-size: 10px;
+  font-weight: 850;
+  white-space: nowrap;
+}
+
+.trial-pill-active {
+  border-color: rgba(22, 163, 74, 0.2);
+  color: #15803d;
+  background: rgba(22, 163, 74, 0.08);
+}
+
+.upgrade-card {
+  margin-top: 15px;
+  border: 1px solid rgba(124, 58, 237, 0.16);
+  border-radius: 22px;
+  padding: 16px;
+  background:
+    radial-gradient(circle at top right, rgba(14, 165, 233, 0.12), transparent 38%),
+    linear-gradient(145deg, rgba(255, 255, 255, 0.98), rgba(246, 244, 255, 0.94));
+  box-shadow: 0 18px 42px rgba(39, 44, 71, 0.12);
+}
+
+.upgrade-badge {
+  display: inline-flex;
+  border-radius: 999px;
+  padding: 6px 9px;
+  color: #6d28d9;
+  background: rgba(124, 58, 237, 0.1);
+  font-size: 10px;
+  font-weight: 850;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.upgrade-title {
+  margin: 12px 0 0;
+  color: var(--text);
+  font-size: 20px;
+  font-weight: 900;
+  letter-spacing: -0.05em;
+}
+
+.upgrade-copy {
+  margin: 7px 0 0;
+  color: var(--muted);
+  font-size: 12.5px;
+  line-height: 1.55;
+}
+
+.price-row {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.price {
+  color: var(--text);
+  font-size: 34px;
+  font-weight: 950;
+  letter-spacing: -0.06em;
+}
+
+.price-note {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 750;
+}
+
+.license-input {
+  width: 100%;
+  min-height: 42px;
+  margin-top: 12px;
+  border: 1px solid rgba(17, 24, 39, 0.11);
+  border-radius: 15px;
+  padding: 0 12px;
+  color: var(--text);
+  background: rgba(255, 255, 255, 0.9);
+  outline: none;
+  font-size: 13px;
+}
+
+.license-input:focus {
+  border-color: rgba(124, 58, 237, 0.38);
+  box-shadow: 0 0 0 4px rgba(124, 58, 237, 0.09);
+}
+
+.unlock-row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 8px;
+  align-items: end;
+}
+
 /* Light MetaMask-sized popup theme */
 :root {
   color-scheme: light;

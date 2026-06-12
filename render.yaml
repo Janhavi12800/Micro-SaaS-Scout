@@ -43,3 +43,17 @@ services:
         sync: false
       - key: STRIPE_WEBHOOK_SECRET
         sync: false
+      - key: RAZORPAY_KEY_ID
+        sync: false
+      - key: RAZORPAY_KEY_SECRET
+        sync: false
+      - key: RAZORPAY_PAYMENT_LINK_URL
+        sync: false
+      - key: RAZORPAY_WEBHOOK_SECRET
+        sync: false
+      - key: RAZORPAY_AMOUNT_PAISE
+        value: 5000
+      - key: RAZORPAY_CURRENCY
+        value: INR
+      - key: LICENSE_UNLOCK_CODES
+        sync: false

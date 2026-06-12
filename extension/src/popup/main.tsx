@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { createRoot } from "react-dom/client";
 import { motion } from "framer-motion";
 import { ArrowRight, Download, PanelRightOpen, Save, Sparkles } from "lucide-react";
@@ -7,17 +7,43 @@ import { Logo } from "../components/Logo";
 import { ScorePill } from "../components/ScorePill";
 import "../styles.css";
 
+type EntitlementStatus = {
+  deviceId: string;
+  trialStartedAt: string;
+  trialEndsAt: string;
+  trialDaysLeft: number;
+  isTrialActive: boolean;
+  isLicensed: boolean;
+};
+
 function Popup() {
   const [mode, setMode] = useState<AnalysisRequest["mode"]>("standard");
   const [report, setReport] = useState<AnalysisReport | null>(null);
   const [loading, setLoading] = useState(false);
+  const [paymentLoading, setPaymentLoading] = useState(false);
   const [error, setError] = useState("");
+  const [unlockCode, setUnlockCode] = useState("");
+  const [email, setEmail] = useState("");
+  const [entitlement, setEntitlement] = useState<EntitlementStatus | null>(null);
+
+  const trialExpired = entitlement ? !entitlement.isTrialActive && !entitlement.isLicensed : false;
+
+  useEffect(() => {
+    chrome.runtime.sendMessage({ type: "GET_TRIAL_STATUS" }).then((response) => {
+      if (response?.entitlement) setEntitlement(response.entitlement);
+    });
+  }, []);
 
   async function analyzePage() {
     setLoading(true);
     setError("");
     try {
       const response = await chrome.runtime.sendMessage({ type: "ANALYZE_CURRENT_TAB", mode });
+      if (response?.trialExpired) {
+        setEntitlement(response.entitlement);
+        setError("Your 3-day free trial is over. Unlock lifetime access for ₹50.");
+        return;
+      }
       if (response?.error) {
         setError(response.error);
         return;
@@ -43,6 +69,49 @@ function Popup() {
     await chrome.runtime.sendMessage({ type: "OPEN_SIDE_PANEL" });
   }
 
+  async function startPayment() {
+    setPaymentLoading(true);
+    setError("");
+    try {
+      const response = await chrome.runtime.sendMessage({
+        type: "START_RAZORPAY_PAYMENT",
+        email: email.trim() || undefined,
+      });
+      if (response?.error) {
+        setError(response.error);
+      }
+    } catch (error) {
+      setError(error instanceof Error ? error.message : "Could not open payment link.");
+    } finally {
+      setPaymentLoading(false);
+    }
+  }
+
+  async function activateUnlockCode() {
+    setPaymentLoading(true);
+    setError("");
+    try {
+      const response = await chrome.runtime.sendMessage({
+        type: "ACTIVATE_LICENSE",
+        code: unlockCode.trim(),
+        email: email.trim() || undefined,
+      });
+
+      if (response?.error) {
+        setError(response.error);
+        return;
+      }
+
+      if (response?.entitlement) {
+        setEntitlement(response.entitlement);
+      }
+    } catch (error) {
+      setError(error instanceof Error ? error.message : "Could not activate license.");
+    } finally {
+      setPaymentLoading(false);
+    }
+  }
+
   return (
     <div className="popup-shell">
       <div className="orb orb-one" />
@@ -50,6 +119,11 @@ function Popup() {
       <div className="popup-card">
         <div className="popup-header">
           <Logo />
+          {entitlement && (
+            <span className={entitlement.isLicensed ? "trial-pill trial-pill-active" : "trial-pill"}>
+              {entitlement.isLicensed ? "Lifetime" : `${entitlement.trialDaysLeft}d trial`}
+            </span>
+          )}
           <button
             onClick={openSidePanel}
             className="icon-button"
@@ -83,16 +157,49 @@ function Popup() {
           </select>
           <button
             onClick={analyzePage}
-            disabled={loading}
+            disabled={loading || trialExpired}
             className="primary-button"
           >
-            {loading ? "Scanning website..." : "Analyze current website"}
+            {trialExpired ? "Unlock to continue" : loading ? "Scanning website..." : "Analyze current website"}
             <ArrowRight size={16} />
           </button>
           {error && <p className="error-message">{error}</p>}
         </div>
 
-        {report ? (
+        {trialExpired ? (
+          <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="upgrade-card">
+            <div className="upgrade-badge">3-day trial finished</div>
+            <h2 className="upgrade-title">Unlock lifetime access</h2>
+            <p className="upgrade-copy">
+              Pay once and keep using Micro-SaaS Scout for website opportunity scans.
+            </p>
+            <div className="price-row">
+              <span className="price">₹50</span>
+              <span className="price-note">one-time</span>
+            </div>
+            <input
+              value={email}
+              onChange={(event) => setEmail(event.target.value)}
+              className="license-input"
+              placeholder="Email for payment receipt"
+              type="email"
+            />
+            <button className="primary-button" onClick={startPayment} disabled={paymentLoading}>
+              {paymentLoading ? "Opening payment..." : "Pay ₹50 with Razorpay"}
+            </button>
+            <div className="unlock-row">
+              <input
+                value={unlockCode}
+                onChange={(event) => setUnlockCode(event.target.value)}
+                className="license-input"
+                placeholder="Unlock code"
+              />
+              <button className="secondary-button" onClick={activateUnlockCode} disabled={paymentLoading || !unlockCode.trim()}>
+                Unlock
+              </button>
+            </div>
+          </motion.div>
+        ) : report ? (
           <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="report-card">
             <div className="url-pill">{report.url}</div>
             <h2 className="report-title">{report.title}</h2>
