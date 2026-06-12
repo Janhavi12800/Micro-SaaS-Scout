@@ -27,6 +27,7 @@ const manifest: ManifestV3Export = {
       matches: ["<all_urls>"],
       js: ["src/content.ts"],
       run_at: "document_idle",
+      all_frames: false,
     },
   ],
   side_panel: {

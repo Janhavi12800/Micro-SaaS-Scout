@@ -2,13 +2,12 @@ import { useEffect, useState } from "react";
 import { createRoot } from "react-dom/client";
 import { Bot, Lightbulb, Send, Sparkles, Wrench } from "lucide-react";
 import type { AnalysisReport, ChatMessage } from "@micro-saas-scout/shared";
-import { demoReport } from "@micro-saas-scout/shared";
 import { chat } from "../lib/api";
 import { Logo } from "../components/Logo";
 import "../styles.css";
 
 function SidePanel() {
-  const [report, setReport] = useState<AnalysisReport>(demoReport);
+  const [report, setReport] = useState<AnalysisReport | null>(null);
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
       role: "assistant",
@@ -32,7 +31,7 @@ function SidePanel() {
     setLoading(true);
     try {
       const response = await chat({
-        report,
+        report: report ?? undefined,
         messages: next,
         provider: "openai",
       });
@@ -62,52 +61,67 @@ function SidePanel() {
         </span>
       </div>
 
-      <section className="panel-card hero-panel">
-        <div className="eyebrow">
-          <Sparkles size={14} />
-          Scout report
-        </div>
-        <h1 className="panel-title">{report.title}</h1>
-        <p className="panel-copy">{report.executiveSummary}</p>
-        <div className="panel-score-grid">
-          {Object.entries(report.scores).map(([key, score]) => (
-            <div key={key} className="score-card">
-              <div className="score-value">{score.value}</div>
-              <div className="score-label">{key}</div>
-              <div className="score-track">
-                <div className="score-fill" style={{ width: `${score.value}%` }} />
+      {report ? (
+        <>
+          <section className="panel-card hero-panel">
+            <div className="eyebrow">
+              <Sparkles size={14} />
+              Scout report
+            </div>
+            <h1 className="panel-title">{report.title}</h1>
+            <p className="panel-copy">{report.executiveSummary}</p>
+            <div className="panel-score-grid">
+              {Object.entries(report.scores).map(([key, score]) => (
+                <div key={key} className="score-card">
+                  <div className="score-value">{score.value}</div>
+                  <div className="score-label">{key}</div>
+                  <div className="score-track">
+                    <div className="score-fill" style={{ width: `${score.value}%` }} />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </section>
+
+          <section className="panel-section-grid">
+            <div className="panel-card">
+              <div className="section-title">
+                <Lightbulb size={16} />
+                Best ideas
               </div>
+              {report.saasIdeas.map((idea) => (
+                <div key={idea.name} className="idea-card side-idea-card">
+                  <div className="idea-name">{idea.name}</div>
+                  <div className="idea-tagline">{idea.solution}</div>
+                </div>
+              ))}
             </div>
-          ))}
-        </div>
-      </section>
 
-      <section className="panel-section-grid">
-        <div className="panel-card">
-          <div className="section-title">
-            <Lightbulb size={16} />
-            Best ideas
-          </div>
-          {report.saasIdeas.map((idea) => (
-            <div key={idea.name} className="idea-card side-idea-card">
-              <div className="idea-name">{idea.name}</div>
-              <div className="idea-tagline">{idea.solution}</div>
+            <div className="panel-card">
+              <div className="section-title">
+                <Wrench size={16} />
+                Build this
+              </div>
+              <ul className="feature-list">
+                {report.buildPlan.mvpFeatures.map((feature) => (
+                  <li key={feature}>{feature}</li>
+                ))}
+              </ul>
             </div>
-          ))}
-        </div>
-
-        <div className="panel-card">
-          <div className="section-title">
-            <Wrench size={16} />
-            Build this
+          </section>
+        </>
+      ) : (
+        <section className="panel-card hero-panel">
+          <div className="eyebrow">
+            <Sparkles size={14} />
+            Scout report
           </div>
-          <ul className="feature-list">
-            {report.buildPlan.mvpFeatures.map((feature) => (
-              <li key={feature}>{feature}</li>
-            ))}
-          </ul>
-        </div>
-      </section>
+          <h1 className="panel-title">Analyze a website to unlock Scout intelligence.</h1>
+          <p className="panel-copy">
+            Run an analysis from the popup first. The side panel will then show real scores, SaaS ideas, roadmap, and chat context for that website.
+          </p>
+        </section>
+      )}
 
       <section className="panel-card chat-card">
         <div className="section-title">
