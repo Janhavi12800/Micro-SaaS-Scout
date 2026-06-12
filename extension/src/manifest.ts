@@ -4,6 +4,10 @@ function buildConnectSrc() {
   const apiUrl = process.env.VITE_API_URL ?? "";
   const sources = new Set(["'self'", "https:"]);
 
+  if (!apiUrl) {
+    sources.add("http://localhost:8787");
+  }
+
   if (apiUrl.startsWith("http://localhost")) {
     sources.add(new URL(apiUrl).origin);
   }

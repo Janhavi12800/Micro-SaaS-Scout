@@ -119,6 +119,147 @@ async function persistReport(report: AnalysisReport) {
   await chrome.storage.local.set({ latestReport: report, reports });
 }
 
+function hostnameFromUrl(url: string) {
+  try {
+    return new URL(url).hostname.replace(/^www\./, "");
+  } catch {
+    return "this website";
+  }
+}
+
+function localAnalysisReport(snapshot: PageSnapshot, reason?: string): AnalysisReport {
+  const host = hostnameFromUrl(snapshot.url);
+  const title = snapshot.title || host;
+  const topHeading = snapshot.headings[0] ?? title;
+  const hasPricing = snapshot.pricingSignals.length > 0;
+  const hasForms = snapshot.forms.length > 0;
+  const hasCtas = snapshot.ctas.length > 0;
+  const revenueBase = hasPricing ? 4500 : 2500;
+
+  const markdown = `# ${title}\n\nLocal Scout analysis for ${snapshot.url}\n\n## Top opportunity\nBuild a focused automation layer around the clearest user workflow on this page.`;
+
+  return {
+    id: crypto.randomUUID(),
+    url: snapshot.url,
+    title,
+    generatedAt: new Date().toISOString(),
+    executiveSummary: `Scout analyzed ${host} locally from the current tab. ${topHeading} shows an opportunity to package a sharper micro-SaaS around workflow automation, conversion improvement, and audience-specific insights.${reason ? ` Backend AI was unavailable, so this is a local fallback report.` : ""}`,
+    positioning: `${host} appears positioned around: ${topHeading}.`,
+    businessModel: hasPricing
+      ? "Pricing/subscription signals are visible, suggesting a monetizable product or commercial funnel."
+      : "No strong pricing signal was detected; opportunity may sit in lead generation, content, marketplace, or audience monetization.",
+    weaknesses: [
+      hasCtas ? "Calls-to-action exist, but they may not be tied to a clear quantified outcome." : "Clear conversion calls-to-action are limited or hard to detect.",
+      hasPricing ? "Pricing signals exist, but the page may not fully explain ROI or buyer urgency." : "Pricing or monetization is not obvious from the visible page.",
+      hasForms ? "Forms exist, but the follow-up workflow can likely be automated or enriched with AI." : "Lead capture and structured data collection appear limited.",
+    ],
+    missingFeatures: [
+      "AI summary of user intent and buyer pain",
+      "Personalized onboarding or recommendation flow",
+      "Competitor gap monitor",
+      "Automated lead qualification or content-to-insight workflow",
+      "Shareable report/export experience",
+    ],
+    opportunities: [
+      `Build an AI copilot that helps ${host} users complete the main workflow faster.`,
+      `Create a Chrome extension that extracts insights from pages like ${host} and turns them into action plans.`,
+      `Package a B2B micro-SaaS around monitoring, summarizing, or automating the repeated tasks visible on this site.`,
+    ],
+    saasIdeas: [
+      {
+        name: `${host.split(".")[0] || "Scout"} Copilot`,
+        tagline: "Turn website signals into automated action plans.",
+        targetCustomer: "Founders, operators, marketers, and teams using similar websites daily",
+        pain: "Users manually review pages, extract information, compare options, and decide what to do next.",
+        solution: "A lightweight AI layer that summarizes, scores, and automates the next best action from any page.",
+        monetization: ["Free scan limit", "$19/mo solo plan", "$79/mo pro automation plan"],
+        whyNow: "AI can now transform unstructured web pages into useful business workflows instantly.",
+        difficulty: 46,
+      },
+      {
+        name: "Opportunity Radar",
+        tagline: "Find missing features and monetizable gaps from any website.",
+        targetCustomer: "Indie hackers, agencies, and SaaS product teams",
+        pain: "It is hard to quickly spot validated micro-SaaS ideas while browsing real websites.",
+        solution: "A scanner that turns visible website structure, copy, CTAs, and pricing signals into startup ideas.",
+        monetization: ["$29/mo pro scans", "PDF report exports", "Agency white-label add-on"],
+        whyNow: "Browser extensions plus LLMs make instant contextual startup research possible.",
+        difficulty: 52,
+      },
+    ],
+    competitorGaps: [
+      {
+        competitor: "Manual research",
+        betterAt: "Human judgment and nuance",
+        gapToExploit: "Slow, inconsistent, and hard to repeat at scale",
+        counterPositioning: "Instant AI startup analyst for every website",
+      },
+      {
+        competitor: "Generic AI chatbots",
+        betterAt: "Broad open-ended answers",
+        gapToExploit: "They do not automatically scrape the current tab or structure startup reports",
+        counterPositioning: "Purpose-built website-to-micro-SaaS scanner",
+      },
+    ],
+    revenue: {
+      lowMonthly: revenueBase,
+      realisticMonthly: revenueBase * 5,
+      highMonthly: revenueBase * 18,
+      pricingStrategy: ["Free limited scans", "Monthly pro subscription", "Export/deep-analysis add-ons"],
+      assumptions: [
+        "Local fallback estimate based on visible page signals",
+        "Real AI provider output may refine market size and pricing",
+        "Revenue depends on niche focus, distribution, and retention",
+      ],
+    },
+    buildPlan: {
+      mvpFeatures: [
+        "Current-tab website scanner",
+        "AI opportunity summary",
+        "Scores for demand, difficulty, and virality",
+        "Save/export report",
+        "Follow-up chat assistant",
+      ],
+      frontendStack: ["React", "TypeScript", "Vite", "Chrome Extension MV3"],
+      backendArchitecture: ["Node.js API", "AI provider router", "Supabase persistence", "Stripe-ready billing"],
+      databaseSchema: ["reports(id, user_id, url, title, json, created_at)", "ideas(id, report_id, name, score, json)"],
+      aiStack: ["OpenAI", "Gemini", "Claude", "Local fallback analysis"],
+      suggestedApis: ["OpenAI", "Supabase", "Stripe", "Clerk"],
+      roadmap: [
+        {
+          phase: "MVP",
+          goal: "Validate that users want instant website opportunity scans.",
+          features: ["Analyze current tab", "Generate report", "Save locally"],
+          validationMetric: "Users run 5+ scans in a week",
+        },
+        {
+          phase: "Pro",
+          goal: "Convert repeated usage into subscriptions.",
+          features: ["PDF export", "Deep competitor gap detection", "Saved projects"],
+          validationMetric: "5%+ free-to-pro conversion",
+        },
+      ],
+    },
+    growthIdeas: [
+      "Share public teardown screenshots on founder communities",
+      "Create weekly 'hidden SaaS opportunities' content",
+      "Offer free scans as a lead magnet",
+      "Build viral report cards with branded exports",
+    ],
+    scores: {
+      competition: { label: "Moderate", value: 58, explanation: "Generic tools exist, but contextual website scanning is more focused." },
+      difficulty: { label: "Buildable", value: 44, explanation: "The MVP is achievable with extension scraping and AI summaries." },
+      scalability: { label: "High", value: 78, explanation: "The workflow applies across many websites and niches." },
+      viralPotential: { label: "Strong", value: 72, explanation: "Teardowns and startup ideas are naturally shareable." },
+      marketDemand: { label: "Promising", value: 74, explanation: "Founders and agencies constantly look for validated opportunities." },
+    },
+    exportBlocks: {
+      markdown,
+      notion: markdown,
+    },
+  };
+}
+
 function isPlaceholderReport(report: unknown) {
   return (
     typeof report === "object" &&
@@ -136,11 +277,17 @@ chrome.runtime.onMessage.addListener((message: ScoutMessage, _sender, sendRespon
   (async () => {
     if (message.type === "ANALYZE_CURRENT_TAB") {
       const snapshot = await scrapeActiveTab();
-      const { report } = await analyze({
-        snapshot,
-        mode: message.mode ?? "standard",
-        provider: message.provider ?? "openai",
-      });
+      let report: AnalysisReport;
+      try {
+        const response = await analyze({
+          snapshot,
+          mode: message.mode ?? "standard",
+          provider: message.provider ?? "openai",
+        });
+        report = response.report;
+      } catch (error) {
+        report = localAnalysisReport(snapshot, error instanceof Error ? error.message : "API unavailable");
+      }
       await persistReport(report);
       sendResponse({ report });
       return;
