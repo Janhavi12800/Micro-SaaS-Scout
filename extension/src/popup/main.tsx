@@ -35,31 +35,36 @@ function Popup() {
   }
 
   return (
-    <div className="w-[390px] p-4">
-      <div className="glass rounded-[2rem] p-4">
-        <div className="flex items-center justify-between">
+    <div className="popup-shell">
+      <div className="orb orb-one" />
+      <div className="orb orb-two" />
+      <div className="popup-card">
+        <div className="popup-header">
           <Logo />
           <button
             onClick={openSidePanel}
-            className="rounded-2xl border border-white/10 bg-white/10 p-2 text-sky-200"
+            className="icon-button"
             title="Open side panel"
           >
             <PanelRightOpen size={18} />
           </button>
         </div>
 
-        <div className="mt-5 rounded-3xl border border-white/10 bg-black/35 p-4">
-          <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.2em] text-violet-200">
+        <div className="hero-card">
+          <div className="eyebrow">
             <Sparkles size={14} />
             Current tab intelligence
           </div>
-          <h1 className="mt-3 text-2xl font-black leading-tight text-white">
+          <h1 className="hero-title">
             Find hidden micro-SaaS opportunities here.
           </h1>
+          <p className="hero-copy">
+            AI scans this website and creates a startup teardown with gaps, ideas, revenue, and roadmap.
+          </p>
           <select
             value={mode}
             onChange={(event) => setMode(event.target.value as AnalysisRequest["mode"])}
-            className="mt-4 w-full rounded-2xl border border-white/10 bg-zinc-950 px-3 py-2 text-sm text-white outline-none"
+            className="select-input"
           >
             <option value="standard">Standard analysis</option>
             <option value="hidden-opportunities">Find Hidden SaaS Opportunities</option>
@@ -70,39 +75,39 @@ function Popup() {
           <button
             onClick={analyzePage}
             disabled={loading}
-            className="mt-3 flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-violet-500 to-sky-400 px-4 py-3 text-sm font-bold text-white shadow-glow disabled:opacity-60"
+            className="primary-button"
           >
             {loading ? "Scanning website..." : "Analyze current website"}
             <ArrowRight size={16} />
           </button>
-          {error && <p className="mt-3 text-xs text-rose-300">{error}</p>}
+          {error && <p className="error-message">{error}</p>}
         </div>
 
-        <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="mt-4">
-          <div className="text-xs text-zinc-500">{report.url}</div>
-          <h2 className="mt-1 text-lg font-bold text-white">{report.title}</h2>
-          <p className="mt-2 line-clamp-4 text-sm leading-6 text-zinc-300">{report.executiveSummary}</p>
-          <div className="mt-4 grid grid-cols-3 gap-2">
+        <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="report-card">
+          <div className="url-pill">{report.url}</div>
+          <h2 className="report-title">{report.title}</h2>
+          <p className="report-summary">{report.executiveSummary}</p>
+          <div className="score-grid">
             <ScorePill label="demand" value={report.scores.marketDemand.value} />
             <ScorePill label="viral" value={report.scores.viralPotential.value} />
             <ScorePill label="scale" value={report.scores.scalability.value} />
           </div>
-          <div className="mt-4 space-y-2">
+          <div className="idea-list">
             {report.saasIdeas.slice(0, 2).map((idea) => (
-              <div key={idea.name} className="rounded-2xl border border-white/10 bg-white/[0.04] p-3">
-                <div className="text-sm font-semibold text-white">{idea.name}</div>
-                <div className="mt-1 text-xs text-zinc-500">{idea.tagline}</div>
+              <div key={idea.name} className="idea-card">
+                <div className="idea-name">{idea.name}</div>
+                <div className="idea-tagline">{idea.tagline}</div>
               </div>
             ))}
           </div>
-          <div className="mt-4 grid grid-cols-2 gap-2">
+          <div className="action-grid">
             <button
               onClick={saveReport}
-              className="flex items-center justify-center gap-2 rounded-2xl border border-white/10 bg-white/10 px-3 py-2 text-xs font-semibold text-white"
+              className="secondary-button"
             >
               <Save size={14} /> Save
             </button>
-            <button className="flex items-center justify-center gap-2 rounded-2xl border border-white/10 bg-white/10 px-3 py-2 text-xs font-semibold text-white">
+            <button className="secondary-button">
               <Download size={14} /> Export
             </button>
           </div>

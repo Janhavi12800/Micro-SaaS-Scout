@@ -52,90 +52,91 @@ function SidePanel() {
   }
 
   return (
-    <div className="min-h-screen p-4">
-      <div className="mb-4 flex items-center justify-between">
+    <div className="sidepanel-shell">
+      <div className="orb orb-one" />
+      <div className="orb orb-two" />
+      <div className="sidepanel-header">
         <Logo />
-        <span className="rounded-full border border-violet-400/20 bg-violet-400/10 px-3 py-1 text-[11px] text-violet-100">
+        <span className="status-pill">
           Pro-ready
         </span>
       </div>
 
-      <section className="glass rounded-[2rem] p-4">
-        <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.18em] text-sky-200">
+      <section className="panel-card hero-panel">
+        <div className="eyebrow">
           <Sparkles size={14} />
           Scout report
         </div>
-        <h1 className="mt-3 text-2xl font-black text-white">{report.title}</h1>
-        <p className="mt-3 text-sm leading-6 text-zinc-300">{report.executiveSummary}</p>
-        <div className="mt-4 grid grid-cols-2 gap-2">
+        <h1 className="panel-title">{report.title}</h1>
+        <p className="panel-copy">{report.executiveSummary}</p>
+        <div className="panel-score-grid">
           {Object.entries(report.scores).map(([key, score]) => (
-            <div key={key} className="rounded-2xl border border-white/10 bg-black/30 p-3">
-              <div className="text-xl font-bold text-white">{score.value}</div>
-              <div className="text-[11px] capitalize text-zinc-500">{key}</div>
+            <div key={key} className="score-card">
+              <div className="score-value">{score.value}</div>
+              <div className="score-label">{key}</div>
+              <div className="score-track">
+                <div className="score-fill" style={{ width: `${score.value}%` }} />
+              </div>
             </div>
           ))}
         </div>
       </section>
 
-      <section className="mt-4 grid gap-3">
-        <div className="glass rounded-3xl p-4">
-          <div className="mb-3 flex items-center gap-2 font-semibold text-white">
-            <Lightbulb size={16} className="text-sky-300" />
+      <section className="panel-section-grid">
+        <div className="panel-card">
+          <div className="section-title">
+            <Lightbulb size={16} />
             Best ideas
           </div>
           {report.saasIdeas.map((idea) => (
-            <div key={idea.name} className="mb-3 rounded-2xl border border-white/10 bg-white/[0.04] p-3">
-              <div className="text-sm font-semibold text-white">{idea.name}</div>
-              <div className="mt-1 text-xs leading-5 text-zinc-400">{idea.solution}</div>
+            <div key={idea.name} className="idea-card side-idea-card">
+              <div className="idea-name">{idea.name}</div>
+              <div className="idea-tagline">{idea.solution}</div>
             </div>
           ))}
         </div>
 
-        <div className="glass rounded-3xl p-4">
-          <div className="mb-3 flex items-center gap-2 font-semibold text-white">
-            <Wrench size={16} className="text-sky-300" />
+        <div className="panel-card">
+          <div className="section-title">
+            <Wrench size={16} />
             Build this
           </div>
-          <ul className="space-y-2 text-sm text-zinc-300">
+          <ul className="feature-list">
             {report.buildPlan.mvpFeatures.map((feature) => (
-              <li key={feature}>• {feature}</li>
+              <li key={feature}>{feature}</li>
             ))}
           </ul>
         </div>
       </section>
 
-      <section className="glass mt-4 rounded-[2rem] p-4">
-        <div className="mb-3 flex items-center gap-2 font-semibold text-white">
-          <Bot size={16} className="text-violet-300" />
+      <section className="panel-card chat-card">
+        <div className="section-title">
+          <Bot size={16} />
           AI chat assistant
         </div>
-        <div className="max-h-80 space-y-3 overflow-auto pr-1">
+        <div className="message-list">
           {messages.map((message, index) => (
             <div
               key={`${message.role}-${index}`}
-              className={
-                message.role === "user"
-                  ? "ml-8 rounded-2xl bg-sky-400/15 p-3 text-sm text-sky-50"
-                  : "mr-8 rounded-2xl bg-white/10 p-3 text-sm leading-6 text-zinc-200"
-              }
+              className={message.role === "user" ? "message message-user" : "message message-ai"}
             >
               {message.content}
             </div>
           ))}
-          {loading && <div className="text-xs text-zinc-500">Scout is typing...</div>}
+          {loading && <div className="typing-line">Scout is typing...</div>}
         </div>
-        <div className="mt-3 flex gap-2">
+        <div className="chat-input-row">
           <input
             value={input}
             onChange={(event) => setInput(event.target.value)}
             onKeyDown={(event) => {
               if (event.key === "Enter") void sendMessage();
             }}
-            className="min-w-0 flex-1 rounded-2xl border border-white/10 bg-black/40 px-3 py-2 text-sm text-white outline-none"
+            className="chat-input"
           />
           <button
             onClick={sendMessage}
-            className="rounded-2xl bg-gradient-to-r from-violet-500 to-sky-400 p-3 text-white"
+            className="send-button"
           >
             <Send size={16} />
           </button>
