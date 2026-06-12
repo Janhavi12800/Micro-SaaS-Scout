@@ -10,6 +10,7 @@ The repository contains production-ready configuration for:
 - Render backend API
 - Supabase database
 - Chrome Web Store extension package
+- 3-day extension trial and ₹50 Razorpay lifetime unlock
 
 ## Final verification
 
@@ -29,6 +30,7 @@ Results:
 - Extension production build generated `extension/dist`.
 - Chrome Web Store zip generated `deploy/chrome/micro-saas-scout-extension.zip`.
 - Audit reported 0 high vulnerabilities.
+- Trial/license/payment flow added with Razorpay setup docs.
 
 ## Production URLs wired into templates
 
@@ -63,6 +65,7 @@ deploy/chrome/micro-saas-scout-extension.zip
 extension/.env.production.example
 docs/CHROME_STORE_LISTING.md
 docs/PRIVACY_POLICY.md
+docs/RAZORPAY_TRIAL_SETUP.md
 deploy/screenshots/README.md
 ```
 
@@ -71,6 +74,7 @@ deploy/screenshots/README.md
 ```txt
 supabase/schema.sql
 docs/SUPABASE.md
+docs/RAZORPAY_TRIAL_SETUP.md
 ```
 
 ## Exact Vercel clicks

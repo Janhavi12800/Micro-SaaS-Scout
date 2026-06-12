@@ -171,6 +171,10 @@ CLERK_PUBLISHABLE_KEY=pk_live_or_test_key
 CLERK_SECRET_KEY=sk_live_or_test_key
 STRIPE_SECRET_KEY=sk_live_or_test_key
 STRIPE_WEBHOOK_SECRET=whsec_replace_after_webhook_setup
+RAZORPAY_PAYMENT_LINK_URL=https://rzp.io/i/your-link
+RAZORPAY_AMOUNT_PAISE=5000
+RAZORPAY_CURRENCY=INR
+LICENSE_UNLOCK_CODES=SCOUT50-YOUR-SECRET-CODE
 ```
 
 ### Copy Render backend URL
@@ -469,7 +473,26 @@ STRIPE_WEBHOOK_SECRET=whsec_replace_me
 
 ---
 
-## 7. One-command local deployment preparation
+## 7. Razorpay ₹50 unlock setup
+
+For the 3-day free trial + ₹50 lifetime unlock flow, follow:
+
+```txt
+docs/RAZORPAY_TRIAL_SETUP.md
+```
+
+Minimum beginner Render env:
+
+```env
+RAZORPAY_PAYMENT_LINK_URL=https://rzp.io/i/your-link
+RAZORPAY_AMOUNT_PAISE=5000
+RAZORPAY_CURRENCY=INR
+LICENSE_UNLOCK_CODES=SCOUT50-YOUR-SECRET-CODE
+```
+
+---
+
+## 8. One-command local deployment preparation
 
 Run this before uploading the Chrome extension:
 
@@ -486,7 +509,7 @@ It generates:
 
 ---
 
-## 8. Troubleshooting
+## 9. Troubleshooting
 
 ### Dashboard says API failed
 

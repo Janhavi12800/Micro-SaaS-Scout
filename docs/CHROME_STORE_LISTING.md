@@ -20,6 +20,8 @@ English
 
 Micro-SaaS Scout is an AI-powered Chrome extension that analyzes any website and turns it into a startup opportunity report.
 
+Includes a 3-day free trial. After the trial, users can unlock lifetime access with a one-time ₹50 payment.
+
 Open a website, click Analyze, and get:
 
 - Website problems and weaknesses
@@ -35,6 +37,7 @@ Open a website, click Analyze, and get:
 - Viral and growth ideas
 - Trend scores
 - AI chat assistant
+- 3-day free trial with one-time lifetime unlock
 
 Micro-SaaS Scout is built for:
 
@@ -80,7 +83,7 @@ Used so the extension can analyze any website selected by the user.
 
 ## Privacy practices summary
 
-Micro-SaaS Scout only analyzes a website after user action. The extension may send page text, metadata, URL, headings, CTAs, pricing signals, and optional screenshot data to the configured backend for AI analysis. API keys are never stored in the extension.
+Micro-SaaS Scout only analyzes a website after user action. The extension may send page text, metadata, URL, headings, CTAs, pricing signals, and optional screenshot data to the configured backend for AI analysis. The extension stores a local device ID, trial start date, license status, and recent saved reports. Payments are handled by Razorpay or the configured backend payment provider. API keys are never stored in the extension.
 
 ## Screenshot checklist
 
@@ -102,4 +105,4 @@ Recommended screenshot ideas:
 
 Find startup ideas hiding in plain sight.
 
-Micro-SaaS Scout helps you discover business opportunities, competitor gaps, and AI product ideas from any website in seconds.
+Micro-SaaS Scout helps you discover business opportunities, competitor gaps, and AI product ideas from any website in seconds. Start with a 3-day free trial, then unlock lifetime access for ₹50.

@@ -28,6 +28,8 @@
 - [x] OpenAI, Gemini, Claude, and demo AI provider paths available
 - [x] Supabase service role stays backend-only
 - [x] Stripe backend keys stay backend-only
+- [x] Razorpay one-time unlock env vars documented
+- [x] License endpoint and Supabase `licenses` table included
 
 ## Dashboard production readiness
 
@@ -45,12 +47,14 @@
 - [x] Upload-ready zip exists at `deploy/chrome/micro-saas-scout-extension.zip`
 - [x] Store listing template created at `docs/CHROME_STORE_LISTING.md`
 - [x] Privacy policy template created at `docs/PRIVACY_POLICY.md`
+- [x] 3-day trial and ₹50 lifetime unlock flow included
 - [x] Screenshot checklist created at `deploy/screenshots/README.md`
 
 ## Supabase readiness
 
 - [x] SQL schema created at `supabase/schema.sql`
 - [x] RLS policies included
+- [x] `licenses` table included for device-based extension unlocks
 - [x] Supabase setup guide includes exact SQL Editor, auth, storage, and RLS steps
 
 ## Final verification commands
