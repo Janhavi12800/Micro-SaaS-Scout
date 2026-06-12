@@ -82,7 +82,7 @@ Then in the first PowerShell window:
 ```powershell
 cd $HOME\Downloads\Micro-SaaS-Scout
 $env:VITE_API_URL="http://localhost:8787"
-npm run package:extension
+npm run build:extension:local
 ```
 
 ## 5. Confirm manifest exists
@@ -147,8 +147,7 @@ https://stripe.com
 ```powershell
 cd $HOME\Downloads\Micro-SaaS-Scout
 git pull
-$env:VITE_API_URL="https://micro-saas-scout-api.onrender.com"
-npm run package:extension
+npm run build:extension:local
 ```
 
 4. Click **Load unpacked** again.
