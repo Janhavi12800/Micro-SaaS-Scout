@@ -1,6 +1,21 @@
 import type { ManifestV3Export } from "@crxjs/vite-plugin";
 
-const connectSrc = process.env.NODE_ENV === "production" ? "https:" : "http://localhost:8787 https:";
+function buildConnectSrc() {
+  const apiUrl = process.env.VITE_API_URL ?? "";
+  const sources = new Set(["'self'", "https:"]);
+
+  if (apiUrl.startsWith("http://localhost")) {
+    sources.add(new URL(apiUrl).origin);
+  }
+
+  if (apiUrl.startsWith("http://127.0.0.1")) {
+    sources.add(new URL(apiUrl).origin);
+  }
+
+  return Array.from(sources).join(" ");
+}
+
+const connectSrc = buildConnectSrc();
 
 const manifest: ManifestV3Export = {
   manifest_version: 3,
@@ -36,7 +51,7 @@ const manifest: ManifestV3Export = {
   permissions: ["activeTab", "scripting", "storage", "tabs", "sidePanel"],
   host_permissions: ["<all_urls>"],
   content_security_policy: {
-    extension_pages: `script-src 'self'; object-src 'self'; connect-src 'self' ${connectSrc};`,
+    extension_pages: `script-src 'self'; object-src 'self'; connect-src ${connectSrc};`,
   },
 };
 
