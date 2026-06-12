@@ -6,7 +6,7 @@ import {
   analysisReportSchema,
   buildAnalysisPrompt,
   buildChatPrompt,
-  demoReport,
+  generateFallbackReport,
   type AnalysisReport,
   type AnalysisRequest,
   type ChatMessage,
@@ -35,14 +35,10 @@ function extractJson(text: string) {
 }
 
 function reportFromDemo(input: AnalysisRequest): AnalysisReport {
-  return {
-    ...demoReport,
+  return generateFallbackReport(input.snapshot, {
     id: nanoid(),
-    url: input.snapshot.url,
-    title: input.snapshot.title,
-    generatedAt: new Date().toISOString(),
-    executiveSummary: `${demoReport.executiveSummary} Demo mode analyzed ${input.snapshot.title}. Add an AI provider key for live intelligence.`,
-  };
+    reason: "No AI provider key configured",
+  });
 }
 
 function hydrateReport(raw: unknown, input: AnalysisRequest): AnalysisReport {
