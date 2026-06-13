@@ -9,6 +9,7 @@ import { analysisRouter } from "./routes/analysis.js";
 import { billingRouter } from "./routes/billing.js";
 import { exportRouter } from "./routes/export.js";
 import { projectsRouter } from "./routes/projects.js";
+import { getPaymentReadiness } from "./services/payment-readiness.js";
 
 const app = express();
 const allowedOrigins = new Set([
@@ -62,7 +63,21 @@ app.use(
 app.use(attachUser);
 
 app.get("/health", (_req, res) => {
-  res.json({ ok: true, service: "micro-saas-scout-api" });
+  const payment = getPaymentReadiness();
+  res.json({
+    ok: true,
+    service: "micro-saas-scout-api",
+    payment: {
+      ready: payment.ready,
+      mode: payment.mode,
+      amountInr: payment.amountInr,
+      currency: payment.currency,
+      unlockCodeConfigured: payment.unlockCodeConfigured,
+      supabaseConfigured: payment.supabaseConfigured,
+      webhookConfigured: payment.webhookConfigured,
+      nextSteps: payment.nextSteps,
+    },
+  });
 });
 
 app.use("/api", analysisRouter);
