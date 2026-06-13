@@ -1,15 +1,11 @@
+import {
+  CATEGORY_LABELS,
+  detectCategory,
+  executiveSummaryForCategory,
+  markdownSummaryForCategory,
+  type Category,
+} from "./classification.js";
 import type { AnalysisReport, PageSnapshot, Score, StartupIdea } from "./schemas.js";
-
-type Category =
-  | "video"
-  | "payments"
-  | "commerce"
-  | "developer"
-  | "ai"
-  | "education"
-  | "content"
-  | "productivity"
-  | "general";
 
 function clamp(value: number, min = 25, max = 95) {
   return Math.max(min, Math.min(max, Math.round(value)));
@@ -41,44 +37,98 @@ function titleCase(value: string) {
     .join(" ");
 }
 
-function detectCategory(snapshot: PageSnapshot): Category {
-  const text = `${snapshot.url} ${snapshot.title} ${snapshot.description ?? ""} ${snapshot.headings.join(" ")} ${snapshot.visibleText.slice(0, 4000)}`.toLowerCase();
-
-  if (/youtube|video|watch|channel|subscribe|creator|music|shorts/.test(text)) return "video";
-  if (/stripe|payment|checkout|invoice|financial|banking|revenue|transaction/.test(text)) return "payments";
-  if (/shop|cart|store|ecommerce|product|checkout|buy now|seller/.test(text)) return "commerce";
-  if (/api|developer|docs|github|code|sdk|database|deploy/.test(text)) return "developer";
-  if (/\bai\b|artificial intelligence|automation|copilot|agent|llm|prompt/.test(text)) return "ai";
-  if (/course|learn|student|school|tutorial|lesson|education/.test(text)) return "education";
-  if (/blog|newsletter|article|creator|media|podcast|news/.test(text)) return "content";
-  if (/project|task|workflow|team|calendar|crm|productivity/.test(text)) return "productivity";
-  return "general";
-}
-
 function score(label: string, value: number, explanation: string): Score {
   return { label, value: clamp(value), explanation };
 }
 
 function categoryBase(category: Category) {
   switch (category) {
+    case "search":
+      return { demand: 78, viral: 42, scale: 74, competition: 81, difficulty: 58 };
     case "video":
       return { demand: 73, viral: 86, scale: 68, competition: 82, difficulty: 54 };
-    case "payments":
-      return { demand: 88, viral: 48, scale: 91, competition: 84, difficulty: 72 };
+    case "saas":
+      return { demand: 82, viral: 50, scale: 84, competition: 77, difficulty: 60 };
     case "commerce":
       return { demand: 80, viral: 58, scale: 82, competition: 76, difficulty: 58 };
-    case "developer":
-      return { demand: 76, viral: 45, scale: 86, competition: 70, difficulty: 62 };
-    case "ai":
-      return { demand: 84, viral: 74, scale: 88, competition: 79, difficulty: 67 };
-    case "education":
-      return { demand: 70, viral: 64, scale: 72, competition: 61, difficulty: 45 };
     case "content":
       return { demand: 66, viral: 78, scale: 63, competition: 68, difficulty: 42 };
+    case "ai":
+      return { demand: 84, viral: 74, scale: 88, competition: 79, difficulty: 67 };
+    case "landing":
+      return { demand: 71, viral: 62, scale: 70, competition: 64, difficulty: 46 };
+    case "payments":
+      return { demand: 88, viral: 48, scale: 91, competition: 84, difficulty: 72 };
+    case "developer":
+      return { demand: 76, viral: 45, scale: 86, competition: 70, difficulty: 62 };
+    case "education":
+      return { demand: 70, viral: 64, scale: 72, competition: 61, difficulty: 45 };
     case "productivity":
       return { demand: 74, viral: 52, scale: 79, competition: 73, difficulty: 56 };
     default:
       return { demand: 62, viral: 55, scale: 66, competition: 58, difficulty: 48 };
+  }
+}
+
+function categoryScoreAdjustments(category: Category, snapshot: PageSnapshot) {
+  switch (category) {
+    case "search":
+      return { demand: 4, viral: -8, scale: 3, competition: 5, difficulty: 2 };
+    case "video":
+      return { demand: 2, viral: 6, scale: 0, competition: 4, difficulty: -2 };
+    case "saas":
+      return {
+        demand: snapshot.pricingSignals.length > 0 ? 5 : 2,
+        viral: 0,
+        scale: 4,
+        competition: 3,
+        difficulty: snapshot.forms.length > 0 ? 3 : 0,
+      };
+    case "commerce":
+      return {
+        demand: 3,
+        viral: snapshot.reviews.length > 0 ? 4 : 0,
+        scale: 2,
+        competition: 4,
+        difficulty: 1,
+      };
+    case "content":
+      return { demand: 1, viral: 5, scale: -2, competition: 2, difficulty: -4 };
+    case "ai":
+      return { demand: 5, viral: 4, scale: 5, competition: 6, difficulty: 4 };
+    case "landing":
+      return {
+        demand: snapshot.ctas.length > 1 ? 4 : 1,
+        viral: 2,
+        scale: -1,
+        competition: -2,
+        difficulty: -3,
+      };
+    default:
+      return { demand: 0, viral: 0, scale: 0, competition: 0, difficulty: 0 };
+  }
+}
+
+function revenueBaseForCategory(category: Category, snapshot: PageSnapshot) {
+  switch (category) {
+    case "payments":
+      return 7000;
+    case "saas":
+      return snapshot.pricingSignals.length ? 5200 : 3800;
+    case "commerce":
+      return 4600;
+    case "ai":
+      return 4800;
+    case "search":
+      return 3200;
+    case "video":
+      return 1800;
+    case "landing":
+      return snapshot.pricingSignals.length ? 3600 : 2400;
+    case "content":
+      return 2100;
+    default:
+      return snapshot.pricingSignals.length ? 4200 : 2500;
   }
 }
 
@@ -95,6 +145,16 @@ function ideasForCategory(category: Category, host: string, brand: string): Star
   };
 
   const primaryByCategory: Record<Category, StartupIdea> = {
+    search: {
+      name: "SERP Intent Scout",
+      tagline: "Turn search result pages into keyword and niche product opportunities.",
+      targetCustomer: "SEO consultants, indie hackers, and content-led founders",
+      pain: "Search intent is visible on SERPs but tedious to convert into product ideas manually.",
+      solution: `Analyze ${host} result patterns to suggest keyword gaps, comparison pages, and intent-specific micro-tools.`,
+      monetization: ["₹50 lifetime unlock", "SEO report exports", "Agency keyword packs"],
+      whyNow: "Search behavior is shifting quickly and founders need faster intent research.",
+      difficulty: 52,
+    },
     video: {
       name: "Creator Signal Scout",
       tagline: "Turn YouTube pages into creator growth and sponsorship insights.",
@@ -105,15 +165,15 @@ function ideasForCategory(category: Category, host: string, brand: string): Star
       whyNow: "Creators need faster content research and AI can summarize public signals instantly.",
       difficulty: 44,
     },
-    payments: {
-      name: `${brand} Revenue Copilot`,
-      tagline: "Find revenue leaks and payment workflow opportunities.",
-      targetCustomer: "SaaS founders, finance ops teams, and payment-led startups",
-      pain: "Payment, billing, and revenue workflows are complex and full of manual follow-up.",
-      solution: `Use ${host} style payment signals to generate checkout, billing, churn, and revenue automation ideas.`,
-      monetization: ["₹50 idea scans", "Monthly finance automation reports", "Implementation templates"],
-      whyNow: "Every internet business is optimizing payments, billing, and revenue operations.",
-      difficulty: 68,
+    saas: {
+      name: `${brand} Workflow Wedge`,
+      tagline: "Find narrower SaaS wedges from established software websites.",
+      targetCustomer: "SaaS founders, product marketers, and automation agencies",
+      pain: "Broad SaaS products are crowded; builders need sharper workflow-specific entry points.",
+      solution: `Use ${host} feature, pricing, and integration signals to propose onboarding, billing, and ops automations.`,
+      monetization: ["₹50 scans", "MVP spec exports", "Agency teardown packs"],
+      whyNow: "Buyers want focused workflow ROI instead of all-in-one platforms.",
+      difficulty: 58,
     },
     commerce: {
       name: "Store Gap Finder",
@@ -125,15 +185,15 @@ function ideasForCategory(category: Category, host: string, brand: string): Star
       whyNow: "Small stores need affordable optimization without hiring expensive consultants.",
       difficulty: 52,
     },
-    developer: {
-      name: "API Gap Scout",
-      tagline: "Turn developer websites into API and tooling opportunities.",
-      targetCustomer: "Devtool founders and technical agencies",
-      pain: "Developers struggle to identify missing SDKs, docs gaps, and automation opportunities quickly.",
-      solution: "Analyze docs/API pages and suggest wrappers, plugins, templates, and integration products.",
-      monetization: ["Paid reports", "Template packs", "Developer workflow automations"],
-      whyNow: "AI makes developer documentation and integration research much faster.",
-      difficulty: 60,
+    content: {
+      name: "Content Monetization Scout",
+      tagline: "Find newsletter, media, and creator monetization opportunities.",
+      targetCustomer: "Creators, bloggers, newsletter operators, and media teams",
+      pain: "Content teams struggle to turn attention into products and repeatable revenue.",
+      solution: "Scan content pages and suggest paid communities, lead magnets, sponsorships, and tools.",
+      monetization: ["₹50 scans", "Content strategy exports", "Sponsorship lists"],
+      whyNow: "Creators are moving from ads to products and owned audiences.",
+      difficulty: 40,
     },
     ai: {
       name: "AI Workflow Cloner",
@@ -145,6 +205,36 @@ function ideasForCategory(category: Category, host: string, brand: string): Star
       whyNow: "AI adoption is high, but buyers want specific workflow ROI.",
       difficulty: 62,
     },
+    landing: {
+      name: "Landing Page Copilot",
+      tagline: "Turn single-page product sites into CRO and lead-gen product ideas.",
+      targetCustomer: "Marketers, indie hackers, and conversion agencies",
+      pain: "Landing pages hide repeatable conversion patterns that are hard to benchmark quickly.",
+      solution: `Analyze ${host} hero copy, CTAs, and proof elements to suggest personalization, qualification, and follow-up tools.`,
+      monetization: ["₹50 scans", "CRO teardown exports", "Agency swipe files"],
+      whyNow: "Founders launch faster with AI and need sharper conversion feedback loops.",
+      difficulty: 43,
+    },
+    payments: {
+      name: `${brand} Revenue Copilot`,
+      tagline: "Find revenue leaks and payment workflow opportunities.",
+      targetCustomer: "SaaS founders, finance ops teams, and payment-led startups",
+      pain: "Payment, billing, and revenue workflows are complex and full of manual follow-up.",
+      solution: `Use ${host} style payment signals to generate checkout, billing, churn, and revenue automation ideas.`,
+      monetization: ["₹50 idea scans", "Monthly finance automation reports", "Implementation templates"],
+      whyNow: "Every internet business is optimizing payments, billing, and revenue operations.",
+      difficulty: 68,
+    },
+    developer: {
+      name: "API Gap Scout",
+      tagline: "Turn developer websites into API and tooling opportunities.",
+      targetCustomer: "Devtool founders and technical agencies",
+      pain: "Developers struggle to identify missing SDKs, docs gaps, and automation opportunities quickly.",
+      solution: "Analyze docs/API pages and suggest wrappers, plugins, templates, and integration products.",
+      monetization: ["Paid reports", "Template packs", "Developer workflow automations"],
+      whyNow: "AI makes developer documentation and integration research much faster.",
+      difficulty: 60,
+    },
     education: {
       name: "Course Opportunity Scout",
       tagline: "Find learning gaps and education product ideas from any page.",
@@ -154,16 +244,6 @@ function ideasForCategory(category: Category, host: string, brand: string): Star
       monetization: ["Lifetime unlock", "Course report exports", "Creator bundles"],
       whyNow: "AI tutoring and personalized learning are becoming mainstream.",
       difficulty: 42,
-    },
-    content: {
-      name: "Content Monetization Scout",
-      tagline: "Find newsletter, media, and creator monetization opportunities.",
-      targetCustomer: "Creators, bloggers, newsletter operators, and media teams",
-      pain: "Content teams struggle to turn attention into products and repeatable revenue.",
-      solution: "Scan content pages and suggest paid communities, lead magnets, sponsorships, and tools.",
-      monetization: ["₹50 scans", "Content strategy exports", "Sponsorship lists"],
-      whyNow: "Creators are moving from ads to products and owned audiences.",
-      difficulty: 40,
     },
     productivity: {
       name: "Workflow Friction Finder",
@@ -197,31 +277,33 @@ export function generateFallbackReport(
   const host = hostnameFromUrl(snapshot.url);
   const brand = titleCase(host.split(".")[0] || "Scout");
   const category = detectCategory(snapshot);
+  const categoryLabel = CATEGORY_LABELS[category];
   const base = categoryBase(category);
+  const adjustments = categoryScoreAdjustments(category, snapshot);
   const seed = hashString(`${snapshot.url}|${snapshot.title}|${snapshot.headings.join("|")}`);
   const variance = (offset: number) => ((seed >> offset) % 17) - 8;
   const signalBoost = Math.min(10, snapshot.ctas.length + snapshot.forms.length + snapshot.pricingSignals.length);
   const textBoost = snapshot.visibleText.length > 8000 ? 5 : snapshot.visibleText.length > 2500 ? 3 : 0;
   const topHeading = snapshot.headings[0] ?? snapshot.title;
-
-  const demand = clamp(base.demand + signalBoost + textBoost + variance(1));
-  const viral = clamp(base.viral + (snapshot.reviews.length > 0 ? 4 : 0) + variance(3));
-  const scale = clamp(base.scale + (snapshot.links.length > 20 ? 4 : 0) + variance(5));
-  const competition = clamp(base.competition + signalBoost / 2 + variance(7));
-  const difficulty = clamp(base.difficulty + (snapshot.forms.length > 0 ? 4 : 0) + variance(9));
-  const revenueBase = category === "payments" ? 7000 : category === "video" ? 1800 : snapshot.pricingSignals.length ? 4200 : 2500;
-  const ideas = ideasForCategory(category, host, brand);
   const reasonLine = options.reason ? ` This fallback was used because live AI was unavailable.` : "";
+
+  const demand = clamp(base.demand + adjustments.demand + signalBoost + textBoost + variance(1));
+  const viral = clamp(base.viral + adjustments.viral + (snapshot.reviews.length > 0 ? 4 : 0) + variance(3));
+  const scale = clamp(base.scale + adjustments.scale + (snapshot.links.length > 20 ? 4 : 0) + variance(5));
+  const competition = clamp(base.competition + adjustments.competition + signalBoost / 2 + variance(7));
+  const difficulty = clamp(base.difficulty + adjustments.difficulty + (snapshot.forms.length > 0 ? 4 : 0) + variance(9));
+  const revenueBase = revenueBaseForCategory(category, snapshot);
+  const ideas = ideasForCategory(category, host, brand);
 
   const markdown = [
     `# ${snapshot.title}`,
     "",
     `URL: ${snapshot.url}`,
     "",
-    `Category: ${category}`,
+    `Category: ${categoryLabel}`,
     "",
     "## Summary",
-    `${host} shows signals around ${topHeading}. ${reasonLine}`,
+    markdownSummaryForCategory(category, host, topHeading, reasonLine),
     "",
     "## Top Ideas",
     ...ideas.map((idea) => `- ${idea.name}: ${idea.tagline}`),
@@ -232,12 +314,16 @@ export function generateFallbackReport(
     url: snapshot.url,
     title: snapshot.title,
     generatedAt: new Date().toISOString(),
-    executiveSummary: `${host} looks like a ${category} opportunity surface. The page signals around "${topHeading}" suggest micro-SaaS angles in automation, analytics, conversion, and workflow packaging.${reasonLine}`,
-    positioning: `${host} is currently positioned around "${topHeading}" with ${snapshot.ctas.length} detectable CTA signals and ${snapshot.headings.length} heading signals.`,
+    executiveSummary: executiveSummaryForCategory(category, host, topHeading, reasonLine),
+    positioning: `${host} is positioned as a ${categoryLabel}. The page centers on "${topHeading}" with ${snapshot.ctas.length} CTA signals and ${snapshot.headings.length} heading signals.`,
     businessModel:
       snapshot.pricingSignals.length > 0
         ? `Commercial intent is visible through pricing/payment signals: ${snapshot.pricingSignals.slice(0, 4).join(", ")}.`
-        : `No strong pricing signal was detected, so monetization likely depends on lead capture, audience, subscription, or workflow automation.`,
+        : category === "search"
+          ? "Search pages monetize through ads, data products, and intent-driven tools rather than direct checkout flows."
+          : category === "content"
+            ? "Content sites typically monetize through subscriptions, sponsorships, affiliate offers, or paid products."
+            : `No strong pricing signal was detected, so monetization likely depends on lead capture, audience building, or workflow automation.`,
     weaknesses: [
       snapshot.ctas.length
         ? "CTAs exist, but the page can likely communicate sharper outcome-based value."
@@ -257,7 +343,7 @@ export function generateFallbackReport(
       "Exportable/shareable insight report",
     ],
     opportunities: [
-      `Build a ${category} intelligence layer for people researching pages like ${host}.`,
+      `Build a ${categoryLabel} intelligence layer for people researching pages like ${host}.`,
       `Create a Chrome extension workflow that turns ${host} page signals into tasks, reports, or recommendations.`,
       `Package the repeated user decisions on ${host} into a paid micro-SaaS assistant.`,
     ],
@@ -282,8 +368,8 @@ export function generateFallbackReport(
       highMonthly: revenueBase * 14,
       pricingStrategy: ["3-day free trial", "₹50 one-time unlock", "Optional pro exports or agency packs"],
       assumptions: [
-        `Category detected as ${category}`,
-        "Fallback estimates use page signals, not live market data",
+        `Website classified as ${categoryLabel}`,
+        "Fallback estimates use hostname, meta, URL, and content signals rather than live market data",
         "Real AI provider keys will improve detail and accuracy",
       ],
     },
@@ -316,17 +402,17 @@ export function generateFallbackReport(
       ],
     },
     growthIdeas: [
-      `Share ${category} teardown examples on social media`,
+      `Share ${categoryLabel} teardown examples on social media`,
       "Create before/after website opportunity screenshots",
       "Offer free first scans to indie hackers",
       "Bundle reports for agencies and consultants",
     ],
     scores: {
-      competition: score("Contextual", competition, `Competition score adjusted for ${category} category and visible page signals.`),
-      difficulty: score("Buildability", difficulty, "Difficulty estimates MVP complexity from workflow, forms, and category."),
-      scalability: score("Scale potential", scale, `Scale score reflects how broadly ${category} workflows can repeat across sites.`),
-      viralPotential: score("Shareability", viral, "Viral potential reflects content/share signals and category behavior."),
-      marketDemand: score("Demand", demand, "Demand uses category, CTA, pricing, and content-depth signals."),
+      competition: score("Contextual", competition, `Competition score adjusted for ${categoryLabel} and visible page signals.`),
+      difficulty: score("Buildability", difficulty, `Difficulty reflects ${categoryLabel} MVP complexity and detected forms/workflows.`),
+      scalability: score("Scale potential", scale, `Scale score reflects how broadly ${categoryLabel} workflows repeat across sites.`),
+      viralPotential: score("Shareability", viral, `Shareability reflects ${categoryLabel} content patterns and social proof signals.`),
+      marketDemand: score("Demand", demand, `Demand uses ${categoryLabel} signals plus CTA, pricing, and content depth.`),
     },
     exportBlocks: {
       markdown,
